@@ -63,7 +63,7 @@ namespace AccessUpdater
                     continue;
                 }
 
-                string fullFile = File.ReadAllText(@sqlFilePath).Trim();
+                string fullFile = File.ReadAllText(@sqlFilePath, Encoding.UTF8).Trim();
                 string[] commands = fullFile.Split(';');
 
                 Console.WriteLine();
