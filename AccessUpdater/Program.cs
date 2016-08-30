@@ -72,18 +72,42 @@ namespace AccessUpdater
                     if (command.Equals(""))
                         continue;
 
-                    try
+                    if (command.ToLower().Contains("insert into"))
                     {
-                        OleDbCommand cmd = new OleDbCommand(command, dbCon);
-                        int cmdResult = cmd.ExecuteNonQuery();
-                        if (cmdResult == -1)
-                            Console.WriteLine("Command successful executed\n");
-                        else
-                            Console.WriteLine("Command successfully executed, {0} Row(s) affected\n", cmdResult);
+                        string insertBase = command.Split(new string[] { "VALUES", "values", "Values" }, StringSplitOptions.RemoveEmptyEntries)[0] + "VALUES";
+                        string[] values = command.Split(new string[] { "VALUES", "values", "Values" }, StringSplitOptions.RemoveEmptyEntries)[1].Split('(');
+
+                        foreach(string value in values)
+                        {
+                            if (value.Trim().Equals(""))
+                                continue;
+                            try
+                            {
+                                OleDbCommand cmd = new OleDbCommand(insertBase + " (" + value.Split(')')[0] + ");", dbCon);
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (OleDbException ode)
+                            {
+                                Console.WriteLine("An error appeared while executing the command: {0}; please check the syntax and try again: {1}", command, ode.Message);
+                            }
+                        }
+                        Console.WriteLine("Command successfully executed, {0} Row(s) affected\n", values.Length - 1);
                     }
-                    catch (OleDbException ode)
+                    else
                     {
-                        Console.WriteLine("An error appeared while executing the command: {0}; please check the syntax and try again: {1}", command, ode.Message);
+                        try
+                        {
+                            OleDbCommand cmd = new OleDbCommand(command, dbCon);
+                            int cmdResult = cmd.ExecuteNonQuery();
+                            if (cmdResult == -1)
+                                Console.WriteLine("Command successful executed\n");
+                            else
+                                Console.WriteLine("Command successfully executed, {0} Row(s) affected\n", cmdResult);
+                        }
+                        catch (OleDbException ode)
+                        {
+                            Console.WriteLine("An error appeared while executing the command: {0}; please check the syntax and try again: {1}", command, ode.Message);
+                        }
                     }
 
                 }
